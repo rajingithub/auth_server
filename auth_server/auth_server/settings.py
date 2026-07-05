@@ -119,3 +119,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'accounts.User'
+ACCESS_TOKEN_SIZE = 20
+OAUTH_PROVIDER_SCOPES = "default" # we are implementing custom permissions
+ACCESS_TOKEN_EXPIRY_IN_SECS = 86400
