@@ -1,5 +1,6 @@
 from accounts.models import User
 from datetime import datetime
+from django.db.models import Q
 
 
 class UserDAO:
@@ -31,3 +32,52 @@ class UserDAO:
         user.set_password(password)
         user.save()
         return user
+    
+    @staticmethod
+    def get_users(
+        user_id=None,
+        username=None,
+        email=None,
+        first_name=None,
+        last_name=None,
+        is_staff=None,
+        is_active=None,
+        is_superuser=None,
+    ):
+        filters = Q()
+
+        if user_id is not None:
+            filters &= Q(id=user_id)
+
+        if username:
+            filters &= Q(username__icontains=username)
+
+        if email:
+            filters &= Q(email__icontains=email)
+
+        if first_name:
+            filters &= Q(first_name__icontains=first_name)
+
+        if last_name:
+            filters &= Q(last_name__icontains=last_name)
+
+        if is_staff is not None:
+            filters &= Q(is_staff=is_staff)
+
+        if is_active is not None:
+            filters &= Q(is_active=is_active)
+
+        if is_superuser is not None:
+            filters &= Q(is_superuser=is_superuser)
+        return User.objects.filter(filters).order_by('id').values(
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "is_staff",
+            "is_active",
+            "is_superuser",
+            "date_joined",
+            "last_login"
+        )

@@ -5,6 +5,7 @@ from rest_framework import serializers
 from accounts.models import User
 from accounts.dao.user_dao import UserDAO
 from utils.logger import logger
+from utils.pagination import CustomPagination
 
 
 class UserCreateViewSerializer(serializers.Serializer):
@@ -23,6 +24,8 @@ class UserCreateViewSerializer(serializers.Serializer):
         return value
 
 
+class UserListViewSerializer(serializers.Serializer):
+    filters = serializers.DictField(required=False, default={})
 
 class UserCreateView(APIView):
     def post(self, request, *args, **kwargs):
@@ -56,4 +59,22 @@ class UserCreateView(APIView):
 
 class UserListView(APIView):
     def post(self, request, *args, **kwargs):
-        pass
+        try:
+            serializer = UserListViewSerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.error(f"serializer error: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            filters = serializer.validated_data.get("filters", {})
+            queryset = UserDAO.get_users(**filters)
+            paginator = CustomPagination()
+            page = paginator.paginate_queryset(queryset, request)
+            total_count = paginator.page.paginator.count
+            return Response({"data":page, "total_count":total_count})
+
+        except Exception as error:
+            logger.exception(f"Error: {error}")
+            return Response(
+                {"error": "Internal Server Error"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
