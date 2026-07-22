@@ -20,3 +20,10 @@ class AccessTokenDAO:
             user = user
         )
         return access_token
+    
+    @staticmethod
+    def get_access_token_details(token):
+        access_tokens = AccessToken.objects.filter(token=token)
+        if not access_tokens.exists():
+            return None
+        return access_tokens.first()

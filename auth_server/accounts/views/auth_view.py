@@ -22,6 +22,8 @@ class PasswordGrantTypeSerializer(serializers.Serializer):
 
 
 class AuthView(APIView):
+    authentication_classes = []
+    
     def post(self, request):
         request_data = request.data
         try:
