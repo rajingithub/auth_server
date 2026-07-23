@@ -8,7 +8,7 @@ class AccessTokenDAO:
             token,
             expiry,
             user,
-            application_id = None,
+            application = None,
     ):
         
         scopes = OAUTH_PROVIDER_SCOPES
@@ -16,7 +16,7 @@ class AccessTokenDAO:
             token = token,
             expires = expiry,
             scope = scopes,
-            application_id = application_id,
+            application = application,
             user = user
         )
         return access_token

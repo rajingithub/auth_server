@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from utils.logger import logger
 from accounts.helper.authentication_backend import UsernameAuthBackend, EmailAuthBackend
 from accounts.dao.access_token_dao import AccessTokenDAO
+from accounts.dao.application_dao import ApplicationDAO
 from auth_server.settings import ACCESS_TOKEN_SIZE, ACCESS_TOKEN_EXPIRY_IN_SECS
 
 
@@ -19,9 +20,14 @@ def random_token_generator(size):
 
 class AuthViewHelper:
     @staticmethod
-    def authenticate_user(user_identifier, password):
+    def authenticate_user(user_identifier, password, client_id):
         # user is identified by either username/email which will be sent in the
         # same parameter name : user_identifier 
+        application = ApplicationDAO.get_application_by_client_id(client_id)
+        if not application:
+            err_msg = "invalid client_id"
+            logger.error(f"{err_msg}", extra={"client_id":client_id})
+            return None, err_msg
         user_authenticated = False
         user = None
         for backend in AUTH_BACKENDS:
@@ -39,6 +45,7 @@ class AuthViewHelper:
             token=token,
             expiry=datetime.now() + timedelta(seconds=ACCESS_TOKEN_EXPIRY_IN_SECS),
             user = user,
+            application = application
         )
         return {
             "user_id" : user.id,

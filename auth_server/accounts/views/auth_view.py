@@ -11,6 +11,7 @@ from accounts.helper.auth_view_helper import AuthViewHelper
 
 class AuthViewSerializer(serializers.Serializer):
     grant_type = serializers.CharField(required=True, allow_blank=False, allow_null=False)
+    client_id = serializers.CharField(required=True, allow_blank=False, allow_null=False)
 
 class ClientCredentialsGrantTypeSerializer(serializers.Serializer):
     client_id = serializers.CharField(required=True, allow_blank=False, allow_null=False)
@@ -31,6 +32,7 @@ class AuthView(APIView):
             if not serializer.is_valid():
                 logger.error(f"serializer error:{serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            client_id = request_data['client_id']
             grant_type = request_data['grant_type']
             """
                 Think of a "Grant Type" as the method or the type of credentials the client provides to prove who they are. 
@@ -48,7 +50,7 @@ class AuthView(APIView):
                     return Response(password_grant_type_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 username = password_grant_type_serializer.validated_data['username']
                 password = password_grant_type_serializer.validated_data['password']
-                access_token_details, error = AuthViewHelper.authenticate_user(user_identifier=username, password=password)
+                access_token_details, error = AuthViewHelper.authenticate_user(user_identifier=username, password=password, client_id = client_id)
                 if error:
                     return Response({"error":"Authentication Failed"}, status=status.HTTP_401_UNAUTHORIZED)
                 return Response(access_token_details, status = status.HTTP_200_OK)    
