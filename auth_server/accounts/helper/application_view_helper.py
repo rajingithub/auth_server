@@ -20,7 +20,7 @@ class ApplicationViewHelper:
             return {
                 "application_id": application.id,
                 "client_id": application.client_id,
-                "client_secret": application.client_secret
+                "client_secret": client_secret
             }, None
         except Exception as e:
             return None, str(e)

@@ -13,10 +13,6 @@ class AuthViewSerializer(serializers.Serializer):
     grant_type = serializers.CharField(required=True, allow_blank=False, allow_null=False)
     client_id = serializers.CharField(required=True, allow_blank=False, allow_null=False)
 
-class ClientCredentialsGrantTypeSerializer(serializers.Serializer):
-    client_id = serializers.CharField(required=True, allow_blank=False, allow_null=False)
-    client_secret = serializers.CharField(required=True, allow_blank=False, allow_null=False)
-
 class PasswordGrantTypeSerializer(serializers.Serializer):
     username = serializers.CharField(required=True, allow_blank=False, allow_null=False)
     password = serializers.CharField(required=True, allow_blank=False, allow_null=False)
@@ -39,10 +35,24 @@ class AuthView(APIView):
                 our single endpoint checks the incoming request parameter called grant_type and instantly knows whether a human or a machine is trying to log in
             """
             if grant_type.lower() == GrantType.CLIENT_CREDENTIALS.lower():
-                client_credentials_grant_type_serializer = ClientCredentialsGrantTypeSerializer(data = request_data)
-                if not client_credentials_grant_type_serializer.is_valid():
-                    logger.error(f"serializer error:{client_credentials_grant_type_serializer.errors}")
-                    return Response(client_credentials_grant_type_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                request_auth_headers = request.META.get('HTTP_AUTHORIZATION', '')
+                client_id = request_data.get('client_id', None)
+                client_secret = request_data.get('client_secret', None)
+                base64_encoded_client_credentials = None
+                if request_auth_headers:
+                    try:
+                        auth_type, base64_encoded_client_credentials = request_auth_headers.split(' ')
+                        if auth_type.lower() != 'basic':
+                            logger.error(f"Invalid authentication type:{auth_type}")
+                            return Response({"error":"Invalid authentication type"}, status=status.HTTP_400_BAD_REQUEST)
+                    except Exception as e:
+                        logger.error(f"Invalid authentication header, error:{e}")
+                        return Response({"error":"Invalid authentication header"}, status=status.HTTP_400_BAD_REQUEST)
+                access_token_details, error = AuthViewHelper.authenticate_client_credentials(base64_encoded_client_credentials=base64_encoded_client_credentials, client_id=client_id, client_secret=client_secret)
+                if error:
+                    logger.error(f"client credentials authentication failed, error:{error}")
+                    return Response({"error":"Authentication Failed"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response(access_token_details, status = status.HTTP_200_OK)
             elif grant_type.lower() == GrantType.PASSWORD.lower():
                 password_grant_type_serializer = PasswordGrantTypeSerializer(data=request_data)
                 if not password_grant_type_serializer.is_valid():
@@ -52,6 +62,7 @@ class AuthView(APIView):
                 password = password_grant_type_serializer.validated_data['password']
                 access_token_details, error = AuthViewHelper.authenticate_user(user_identifier=username, password=password, client_id = client_id)
                 if error:
+                    logger.error(f"user authentication failed, error:{error}")
                     return Response({"error":"Authentication Failed"}, status=status.HTTP_401_UNAUTHORIZED)
                 return Response(access_token_details, status = status.HTTP_200_OK)    
         except Exception as error:

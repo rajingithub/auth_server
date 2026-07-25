@@ -17,4 +17,9 @@ class TokenAuthentication(BaseAuthentication):
             raise AuthenticationFailed('Invalid authentication token')
         if access_token.expires < datetime.now(timezone.utc):
             raise AuthenticationFailed('Authentication token has expired')
+        request.application = access_token.application
+        if access_token.user is None:
+            # client_credentials grant type does not have a user associated with it
+            return (None, access_token)
+        # If the access token has a user associated with it, return the user and the access token
         return (access_token.user, access_token)
