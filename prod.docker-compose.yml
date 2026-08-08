@@ -1,0 +1,13 @@
+services:
+  auth-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    command: gunicorn auth_server.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    environment:
+      - DEBUG=False
+    restart: always
+
+# docker-compose -f prod.docker-compose.yml up auth-server

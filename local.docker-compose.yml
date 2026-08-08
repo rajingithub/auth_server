@@ -1,0 +1,13 @@
+services:
+  auth-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/AuthServer
+    environment:
+      - DEBUG=True
+
+# docker-compose -f local.docker-compose.yml up auth-server
