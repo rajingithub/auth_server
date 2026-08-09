@@ -1,0 +1,31 @@
+services:
+  mysql:
+    image: mysql:9.7
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # creating/configuring password for root user "root"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql9_volume:/var/lib/mysql
+    networks:
+      - application_network
+volumes:
+  mysql9_volume:
+    name: mysql9_volume
+
+networks:
+  application_network:
+    name: application_network
+    external: true
+
+# Inside the MySQL container, MySQL stores its actual database files under: /var/lib/mysql
+# Mount mysql9_volume on the host machine to /var/lib/mysql in the container, so that the database files are persisted on the host machine even if the container is removed or recreated.
+
+# docker-compose -f local.db.docker-compose.yml up
+
+# Initial steps needs to be done on DB server
+# 1. CREATE DATABASE auth_db;
+# 2. CREATE USER 'auth_user'@'%' IDENTIFIED BY 'auth_password';
+# 3. GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER ON auth_db.* TO 'auth_user'@'%';
