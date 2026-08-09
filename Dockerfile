@@ -7,7 +7,13 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /AuthServer
 # Install dependencies first (to leverage Docker cache)[whatever frequently chnages will be pushed last]
 COPY requirements.txt /AuthServer/
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        default-libmysqlclient-dev \
+        pkg-config \
+    && pip install --no-cache-dir -r requirements.txt \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY . /AuthServer/
 
