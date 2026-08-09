@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -74,10 +74,20 @@ WSGI_APPLICATION = 'auth_server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+AUTH_DATABASE_NAME = os.environ.get('AUTH_DATABASE_NAME')
+AUTH_DATABASE_USER = os.environ.get('AUTH_DATABASE_USER')
+AUTH_DATABASE_USER_PASSWORD = os.environ.get('AUTH_DATABASE_USER_PASSWORD')
+AUTH_DATABASE_HOST = os.environ.get('AUTH_DATABASE_HOST')
+AUTH_DATABASE_PORT = os.environ.get('AUTH_DATABASE_PORT')
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": AUTH_DATABASE_NAME,
+        "USER": AUTH_DATABASE_USER,
+        "PASSWORD": AUTH_DATABASE_USER_PASSWORD,
+        "HOST": AUTH_DATABASE_HOST,
+        "PORT": AUTH_DATABASE_PORT,
     }
 }
 

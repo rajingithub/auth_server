@@ -9,5 +9,17 @@ services:
       - .:/AuthServer
     environment:
       - DEBUG=True
+      - AUTH_DATABASE_NAME=${AUTH_DATABASE_NAME}
+      - AUTH_DATABASE_USER=${AUTH_DATABASE_USER}
+      - AUTH_DATABASE_USER_PASSWORD=${AUTH_DATABASE_USER_PASSWORD}
+      - AUTH_DATABASE_HOST=${AUTH_DATABASE_HOST}
+      - AUTH_DATABASE_PORT=${AUTH_DATABASE_PORT}
+    networks:
+      - application_network
+
+networks:
+  application_network:
+    name: application_network
+    external: true
 
 # docker-compose -f local.docker-compose.yml up auth-server
